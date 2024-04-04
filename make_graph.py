@@ -38,7 +38,7 @@ def read_csv_files(movie_file: str, genre_file: str, actor_file: str) -> Tuple[
     return (titles, genres, actors)  # change with .setdefault?
 
 
-def read_csv_files_small(movie_file: str, genre_file: str, actor_file: str, k: int) -> Tuple[
+def read_csv_files_small(movie_file: str, genre_file: str, actor_file: str, k: int = 100) -> Tuple[
     dict, dict, dict]:  # figure out type annotation
     """Reads the .csv files that have relevant data for the project. Returns a tuple of lists (one  for each file)"""
     # movies = dict()

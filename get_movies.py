@@ -4,8 +4,7 @@ import networkx as nx
 
 
 def binary_search_movie_id(sorted_movies: list, movie_name: str) -> int:
-    """Performs a binary search for a movie's id given the movie data and the movie name"""
-    # Convert the dictionary to a list of tuples sorted by movie name
+    """Performs a binary search for a movie's id in the movie data given the movie data and the movie name"""
     # Initialize left and right pointers for binary search
     left, right = 0, len(sorted_movies) - 1
 
@@ -27,27 +26,6 @@ def binary_search_movie_id(sorted_movies: list, movie_name: str) -> int:
 def recommend_movies(user_names: list[str], user_ratings, movies_data: dict, G: nx.Graph()) -> list:
     """Based on what the user has rated certain movies, a list of the titles of recommended movies
     is returned"""
-    # this would be a good place to implement binary search or some other quick search method me thinks
-    # how am I gonna do this
-    # how calculate similarity score, do for each in list? then summ everything and return highest score?
-    # Convert movie names to movie ids
-    # user_movie_ids = []
-    # for movie_name in user_movies:
-    #     for movie_id, data in movies_data.items():
-    #         if movie_name.lower() in data[0].lower():
-    #             user_movie_ids.append(movie_id)
-    #             break  # delete/fix probs
-    #
-    # # Calculate similarity scores
-    # similarity_scores = {}
-    # for movie_id in user_movie_ids:
-    #     neighbors = graph.get_neighbors(movie_id)
-    #     if neighbors:
-    #         for neighbor_id in neighbors:
-    #             if neighbor_id not in similarity_scores:
-    #                 similarity_scores[neighbor_id] = 0
-    #             similarity_scores[neighbor_id] += graph.get_weight(movie_id, neighbor_id)
-    # pls fix
     # use a binary search function to get the ids of the users' inputted movies and accumulate them in a list
     user_movie_ids = []
     sorted_movies = sorted(movies_data.items(), key=lambda y: y[1])
@@ -57,15 +35,29 @@ def recommend_movies(user_names: list[str], user_ratings, movies_data: dict, G: 
             user_movie_ids.append(user_id)
 
     similarity_scores = {}
+    for movie_id in user_movies.keys():
+        for neighbour_id in G.neighbors(movie_id):
+            if neighbour_id not in similarity_scores:
+                similarity_scores[neighbour_id] = 0
+            similarity_scores[neighbour_id] += G[movie_id][neighbour_id]['weight']
+    # sort by similarity score, keep up to the top k values
+    sorted_recommendations = sorted(similarity_scores.items(), key=lambda v: v[1], reverse=True)
+    if k != -1:
+        sorted_recommendations = sorted_recommendations[:k]
+
+
+
+
+    similarity_scores = {}
     for movie_id in user_movie_ids:
         for neighbour_id in G.neighbors(movie_id):  # networkx sadly does not have the canadian spelling :(
             if neighbour_id not in similarity_scores:
                 similarity_scores[neighbour_id] = 0
             similarity_scores[neighbour_id] += G[movie_id][neighbour_id]['weight']
 
-    sorted_recommendations = sorted(similarity_scores.items(), key=lambda x: x[1], reverse=True)  # do I do quicksort here? idek
+    sorted_recommendations = sorted(similarity_scores.items(), key=lambda x: x[1], reverse=True)
 
-    recommended_movies = [(movie_id, movies_data[movie_id]) for movie_id, _ in sorted_recommendations if
+    recommended_movies = [(movie_id, movies_data[movie_id]) for movie_id, _ in sorted_recommendations if  # isn't this a waste?
                           movie_id not in user_movie_ids]
 
     return recommended_movies
@@ -91,10 +83,6 @@ def returned_movies(recommended_movies: list, genres: dict, actors: dict, movies
 #     #     return ___
     elif q.upper() == "CAST":
         return actors[movie_id]
-    else:
-        print("Not a valid input, try again")
-        returned_movies(recommended_movies, genres, actors, movies_data)  # there's something wrong here idk
-
     # if i in recommended_movies:
     #     inp = input("Which of the following would you like to know about the movie: ")
     #     if inp.upper() == "GENRE":

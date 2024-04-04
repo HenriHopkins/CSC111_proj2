@@ -99,29 +99,26 @@ def get_user_input_direct(movies_data: dict) -> Tuple[list, list]:
 
 
 def get_user_input_csv(movies_data: dict, user_file: str) -> Tuple[list, list]:
-    """jnkjjkkjnjk"""
-    # user_input_movies = []
-    # user_ratings = []
-    # c = 1
-    # with open(user_file, 'r') as file:
-    #     reader = csv.reader(file)
-    #     next(reader)
-    #     for title, rating in reader:
-    #         # insert code to check if movie is valid with ID
-    #         if rating < 0.5 or rating > 5:
-    #             print(f"You have an invalid rating at line {c}")
-    #         else:
-    #             user_input_movies.append(title)
-    #             user_ratings.append(rating)
-    #         c += 1
-    # return user_input_movies, user_ratings
+    """Returns two lists by reading a .csv file: the movie titles of user inputs, and the ratings of the
+    associated movie.
+
+    Preconditions:
+        -if user_file is a valid path to a file, the file is a .csv file that has exactly two columns"""
     titles, ratings = [], []
-    with open(user_file, 'r') as file:
+    c = 0
+    sorted_movies = sorted(movies_data.items(), key=lambda y: y[1])  # sort movies_data for binary search, maybe move outside fn scope (main)
+    with open(user_file, 'r', encoding='utf-8') as file:
         reader = csv.reader(file)
         next(reader)  # Skip header
         for title, rating in reader:
-            titles.append(title)
-            ratings.append(rating)
+            c += 1
+            if get_movies.binary_search_movie_id(sorted_movies, title) == -1:
+                print(f'There was an invalid title at line {c}')
+            if float(rating) not in {0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0}:
+                print(f'There was an invalid rating at line {c}')
+            else:
+                titles.append(title)
+                ratings.append(rating)
     return titles, ratings  # do I need to check if user data is valid?? idek
 
 
@@ -130,8 +127,8 @@ def decide_user_input(movies_data: dict) -> Tuple[list, list]:
     i = input("Enter 1 you import your data from a .csv file, enter 2 to type it in: ")
     if i == '1':
         try:
-            user_file = input("Enter the directory to your .csv file")
-            return get_user_input_csv(movies_data, user_file)
+            user_file = input("Enter the directory to your .csv file (e.g. files/test.csv): ")
+            return get_user_input_csv(movies_data, "files/test.csv")
         except FileNotFoundError:
             print("The specified file was not found")
             valid_input = True  # delete these?
